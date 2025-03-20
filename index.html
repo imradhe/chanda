@@ -60,9 +60,9 @@
     <table id="slokaTable" class="table table-bordered table-striped">
       <thead class="table-light">
         <tr>
-          <th>Sloka</th>
           <th>Kanda</th>
           <th>Sarga</th>
+          <th>Sloka</th>
           <th>Chanda</th>
           <th>Text</th>
         </tr>
@@ -79,7 +79,7 @@
   <script>
     let dataTableInstance;
 
-    fetch('slokas_with_chanda.json')
+    fetch('slokas_with_chanda_formatted.json')
       .then(response => response.json())
       .then(data => {
         const tbody = document.getElementById("slokaTableBody");
@@ -88,10 +88,6 @@
         data.forEach(sloka => {
           const tr = document.createElement("tr");
 
-          const tdSloka = document.createElement("td");
-          tdSloka.textContent = sloka.sloka || '';
-          tr.appendChild(tdSloka);
-
           const tdKanda = document.createElement("td");
           tdKanda.textContent = sloka.kanda || '';
           tr.appendChild(tdKanda);
@@ -99,6 +95,10 @@
           const tdSarga = document.createElement("td");
           tdSarga.textContent = sloka.sarga || '';
           tr.appendChild(tdSarga);
+
+          const tdSloka = document.createElement("td");
+          tdSloka.textContent = sloka.sloka || '';
+          tr.appendChild(tdSloka);
 
           const tdChanda = document.createElement("td");
           const chandaValue = sloka.chanda || 'Unknown';
@@ -135,7 +135,7 @@
 
         chandaDropdown.addEventListener("change", function () {
           const selected = this.value;
-          dataTableInstance.column(3).search(selected).draw();
+          dataTableInstance.column(3).search(selected).draw(); // Column 3 is Chanda now
         });
 
         // Hide loader
