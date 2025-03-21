@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sloka Viewer by Chanda (DataTables)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <script src="https://smruthi.in/test/assets/sanscript/sanscript.js"></script>
+    <style>
+      body { background-color: #f8f9fa; padding: 2rem; font-family: "Noto Sans Devanagari", serif; }
+      .sloka-text { font-size: 1.1rem; white-space: pre-line; }
+      #loadingOverlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: rgba(255, 255, 255, 0.85); z-index: 9999;
+        display: flex; align-items: center; justify-content: center; flex-direction: column;
+      }
+      .transliterated-text { font-style: italic; color: #555; }
+    </style>
+  </head>
+  <body>
+    <div id="loadingOverlay">
+      <div class="spinner-border text-primary mb-3" role="status"><span class="visually-hidden">Loading...</span></div>
+      <div class="fw-bold">Loading Slokas...</div>
+    </div>
+    <div class="container">
+      <h2 class="mb-4">Sloka Viewer by Chanda</h2>
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="chandaDropdown" class="form-label">Filter by Chanda:</label>
+          <select id="chandaDropdown" class="form-select"><option value="">All</option></select>
+        </div>
+        <div class="col-md-4">
+          <label for="translitDropdown" class="form-label">Transliteration:</label>
+          <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Hover over the text to see transliteration"></i>
+          <select id="translitDropdown" class="form-select">
+            <option value="devanagari">Devanagari</option><option value="iast">IAST</option><option value="itrans">ITRANS</option>
+            <option value="hk">Harvard-Kyoto</option><option value="slp1">SLP1</option><option value="velthuis">Velthuis</option>
+            <option value="telugu">Telugu</option><option value="kannada">Kannada</option><option value="malayalam">Malayalam</option>
+            <option value="tamil">Tamil</option><option value="bengali">Bengali</option><option value="gujarati">Gujarati</option>
+            <option value="oriya">Oriya</option><option value="gurmukhi">Gurmukhi</option><option value="assamese">Assamese</option>
+            <option value="manipuri">Manipuri</option><option value="urdu">Urdu</option>
+          </select>
+        </div>
+      </div>
+      <table id="slokaTable" class="table table-bordered table-striped">
+        <thead class="table-light">
+          <tr><th>Sloka #</th><th>Chanda</th><th>Text</th><th>Guru Laghu</th><th>Gana</th></tr>
+        </thead>
+        <tbody id="slokaTableBody"></tbody>
+      </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let dataTableInstance, chandaSet = new Set();
+      function renderSlokaRow(sloka, index) {
+        const tr = document.createElement("tr");
+        const tdSlokaNo = document.createElement("td");
+        tdSlokaNo.textContent = index + 1;
+        tr.appendChild(tdSlokaNo);
+
+        const chandaText = sloka.chandas?.[0]?.chanda || "Unknown";
+        const tdChanda = document.createElement("td");
+        tdChanda.textContent = chandaText;
+        tdChanda.setAttribute("data-original", chandaText);
+        chandaSet.add(chandaText);
+        tr.appendChild(tdChanda);
+
+        const tdText = document.createElement("td");
+        const slokaText = sloka.padas?.map(p => p.words?.map(w => w.word.trim()).join(" ")).join("\n") || "";
+        tdText.innerHTML = `<div class="sloka-text" data-original="${slokaText}">${slokaText}</div>`;
+        tr.appendChild(tdText);
+
+        const tdLaghuGuru = document.createElement("td");
+        tdLaghuGuru.textContent = sloka.chandas?.[0]?.lines?.map(l => l.laghu_guru).join(" | ") || "";
+        tr.appendChild(tdLaghuGuru);
+
+        const tdGana = document.createElement("td");
+        tdGana.textContent = sloka.chandas?.[0]?.lines?.map(l => l.gana).join(" | ") || "";
+        tr.appendChild(tdGana);
+
+        return tr;
+      }
+
+      fetch("../tarkasangraha_chandas.json")
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("slokaTableBody");
+          data.slice(0, 10).forEach((s, i) => tbody.appendChild(renderSlokaRow(s, i)));
+          dataTableInstance = $("#slokaTable").DataTable({ pageLength: 10, lengthMenu: [10, 25, 50, 100], language: { search: "Search Sloka / Chanda:" } });
+          const chandaDropdown = document.getElementById("chandaDropdown");
+          Array.from(chandaSet).sort().forEach(ch => { let opt = document.createElement("option"); opt.value = ch; opt.textContent = ch; chandaDropdown.appendChild(opt); });
+          chandaDropdown.addEventListener("change", function () { dataTableInstance.column(1).search(this.value).draw(); });
+          document.getElementById("loadingOverlay").style.display = "none";
+          addTransliterationHoverHandlers();
+          setTimeout(() => {
+            data.slice(10).forEach((s, i) => dataTableInstance.row.add(renderSlokaRow(s, i + 10)));
+            dataTableInstance.draw();
+          }, 500);
+        });
+
+      function addTransliterationHoverHandlers() {
+        const schemeSelect = document.getElementById("translitDropdown");
+        $("#slokaTable tbody").on("mouseenter", "td:nth-child(2), td:nth-child(3)", function () {
+          const target = schemeSelect.value;
+          if (target === "devanagari") return;
+          const original = $(this).attr("data-original") || $(this).find(".sloka-text").attr("data-original");
+          if (original) $(this).html(`<span class='transliterated-text'>${Sanscript.t(original, "devanagari", target)}</span>`);
+        }).on("mouseleave", "td:nth-child(2), td:nth-child(3)", function () {
+          const original = $(this).attr("data-original") || $(this).find(".sloka-text").attr("data-original");
+          if (original) $(this).text(original);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).forEach(el => new bootstrap.Tooltip(el));
+      });
+    </script>
+  </body>
+</html>
