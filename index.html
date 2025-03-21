@@ -1,146 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Sloka Viewer by Chanda (DataTables)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sloka Viewer by Chanda (DataTables)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"
+    />
 
-  <style>
-    body {
-      background-color: #f8f9fa;
-      padding: 2rem;
-      font-family: "Noto Sans Devanagari", serif;
-    }
-    .sloka-text {
-      font-size: 1.1rem;
-      white-space: pre-line;
-    }
-    #loadingOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(255, 255, 255, 0.85);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-  </style>
-</head>
-<body>
+    <script src="https://smruthi.in/test/assets/sanscript/sanscript.js"></script>
 
-  <!-- Loading Spinner -->
-  <div id="loadingOverlay">
-    <div class="spinner-border text-primary mb-3" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-    <div class="fw-bold">Loading Slokas...</div>
-  </div>
-
-  <div class="container">
-    <h2 class="mb-4">Sloka Viewer by Chanda</h2>
-
-    <!-- Chanda Filter Dropdown -->
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label for="chandaDropdown" class="form-label">Filter by Chanda:</label>
-        <select id="chandaDropdown" class="form-select">
-          <option value="">All</option>
-        </select>
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        font-family: "Noto Sans Devanagari", serif;
+      }
+      .sloka-text {
+        font-size: 1.1rem;
+        white-space: pre-line;
+      }
+      #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(255, 255, 255, 0.85);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      .transliterated-text {
+        font-style: italic;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Spinner -->
+    <div id="loadingOverlay">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
+      <div class="fw-bold">Loading Slokas...</div>
     </div>
 
-    <table id="slokaTable" class="table table-bordered table-striped">
-      <thead class="table-light">
-        <tr>
-          <th>Kanda</th>
-          <th>Sarga</th>
-          <th>Sloka</th>
-          <th>Chanda</th>
-          <th>Text</th>
-        </tr>
-      </thead>
-      <tbody id="slokaTableBody"></tbody>
-    </table>
-  </div>
+    <div class="container">
+      <h2 class="mb-4">Sloka Viewer by Chanda</h2>
 
-  <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+      <!-- Chanda Filter Dropdown -->
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="chandaDropdown" class="form-label">Filter by Chanda:</label>
+          <select id="chandaDropdown" class="form-select">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="translitDropdown" class="form-label">Transliteration:</label>
+          <select id="translitDropdown" class="form-select">
+            <option value="devanagari">Devanagari</option>
+            <option value="iast">IAST</option>
+            <option value="itrans">ITRANS</option>
+            <option value="hk">Harvard-Kyoto</option>
+            <option value="slp1">SLP1</option>
+            <option value="velthuis">Velthuis</option>
+          </select>
+        </div>
+      </div>
 
-  <script>
-    let dataTableInstance;
+      <table id="slokaTable" class="table table-bordered table-striped">
+        <thead class="table-light">
+          <tr>
+            <th>Kanda</th>
+            <th>Sarga</th>
+            <th>Sloka</th>
+            <th>Chanda</th>
+            <th>Text</th>
+          </tr>
+        </thead>
+        <tbody id="slokaTableBody"></tbody>
+      </table>
+    </div>
 
-    fetch('slokas_with_chanda_formatted.json')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.getElementById("slokaTableBody");
-        const chandaSet = new Set();
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-        data.forEach(sloka => {
-          const tr = document.createElement("tr");
+    <script>
+      let dataTableInstance;
 
-          const tdKanda = document.createElement("td");
-          tdKanda.textContent = sloka.kanda || '';
-          tr.appendChild(tdKanda);
+      fetch("slokas_with_chanda_formatted.json")
+        .then((response) => response.json())
+        .then((data) => {
+          const tbody = document.getElementById("slokaTableBody");
+          const chandaSet = new Set();
 
-          const tdSarga = document.createElement("td");
-          tdSarga.textContent = sloka.sarga || '';
-          tr.appendChild(tdSarga);
+          data.forEach((sloka) => {
+            const tr = document.createElement("tr");
 
-          const tdSloka = document.createElement("td");
-          tdSloka.textContent = sloka.sloka || '';
-          tr.appendChild(tdSloka);
+            const tdKanda = document.createElement("td");
+            tdKanda.textContent = sloka.kanda || "";
+            tr.appendChild(tdKanda);
 
-          const tdChanda = document.createElement("td");
-          const chandaValue = sloka.chanda || 'Unknown';
-          tdChanda.textContent = chandaValue;
-          chandaSet.add(chandaValue);
-          tr.appendChild(tdChanda);
+            const tdSarga = document.createElement("td");
+            tdSarga.textContent = sloka.sarga || "";
+            tr.appendChild(tdSarga);
 
-          const tdText = document.createElement("td");
-          const padas = sloka.padas || [];
-          const text = padas.map(pada =>
-            pada.map(word => word.word.trim()).join(" ")
-          ).join("\n");
-          tdText.innerHTML = `<div class="sloka-text">${text}</div>`;
-          tr.appendChild(tdText);
+            const tdSloka = document.createElement("td");
+            tdSloka.textContent = sloka.sloka || "";
+            tr.appendChild(tdSloka);
 
-          tbody.appendChild(tr);
+            const tdChanda = document.createElement("td");
+            const chandaValue = sloka.chanda || "Unknown";
+            tdChanda.textContent = chandaValue;
+            tdChanda.setAttribute("data-original", chandaValue);
+            chandaSet.add(chandaValue);
+            tr.appendChild(tdChanda);
+
+            const tdText = document.createElement("td");
+            const padas = sloka.padas || [];
+            const text = padas
+              .map((pada) => pada.map((word) => word.word.trim()).join(" "))
+              .join("\n");
+            tdText.innerHTML = `<div class="sloka-text" data-original="${text}">${text}</div>`;
+            tr.appendChild(tdText);
+
+            tbody.appendChild(tr);
+          });
+
+          dataTableInstance = $("#slokaTable").DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
+              search: "Search Sloka / Chanda:",
+            },
+          });
+
+          const chandaDropdown = document.getElementById("chandaDropdown");
+          Array.from(chandaSet)
+            .sort()
+            .forEach((chanda) => {
+              const opt = document.createElement("option");
+              opt.value = chanda;
+              opt.textContent = chanda;
+              chandaDropdown.appendChild(opt);
+            });
+
+          chandaDropdown.addEventListener("change", function () {
+            const selected = this.value;
+            dataTableInstance.column(3).search(selected).draw();
+          });
+
+          // Hide loader
+          document.getElementById("loadingOverlay").style.display = "none";
+
+          // Add hover transliteration
+          addTransliterationHoverHandlers();
         });
 
-        dataTableInstance = $('#slokaTable').DataTable({
-          pageLength: 10,
-          lengthMenu: [10, 25, 50, 100],
-          language: {
-            search: "Search Sloka / Chanda:"
-          }
+      function addTransliterationHoverHandlers() {
+        const schemeSelect = document.getElementById("translitDropdown");
+
+        $("#slokaTable tbody").on("mouseenter", "td:nth-child(4)", function () {
+          const targetScheme = schemeSelect.value;
+          if (targetScheme === "devanagari") return;
+
+          const original = $(this).attr("data-original");
+          if (!original) return;
+
+          const transliterated = Sanscript.t(original, "devanagari", targetScheme);
+          $(this).html(`<span class="transliterated-text">${transliterated}</span>`);
         });
 
-        const chandaDropdown = document.getElementById("chandaDropdown");
-        Array.from(chandaSet).sort().forEach(chanda => {
-          const opt = document.createElement("option");
-          opt.value = chanda;
-          opt.textContent = chanda;
-          chandaDropdown.appendChild(opt);
+        $("#slokaTable tbody").on("mouseleave", "td:nth-child(4)", function () {
+          const original = $(this).attr("data-original");
+          if (original) $(this).text(original);
         });
 
-        chandaDropdown.addEventListener("change", function () {
-          const selected = this.value;
-          dataTableInstance.column(3).search(selected).draw(); // Column 3 is Chanda now
+        $("#slokaTable tbody").on("mouseenter", "td:nth-child(5)", function () {
+          const targetScheme = schemeSelect.value;
+          if (targetScheme === "devanagari") return;
+
+          const div = $(this).find(".sloka-text");
+          const original = div.attr("data-original");
+          if (!original) return;
+
+          const transliterated = Sanscript.t(original, "devanagari", targetScheme);
+          div.html(`<span class="transliterated-text">${transliterated}</span>`);
         });
 
-        // Hide loader
-        document.getElementById("loadingOverlay").style.display = "none";
-      });
-  </script>
-</body>
+        $("#slokaTable tbody").on("mouseleave", "td:nth-child(5)", function () {
+          const div = $(this).find(".sloka-text");
+          const original = div.attr("data-original");
+          if (original) div.text(original);
+        });
+      }
+    </script>
+  </body>
 </html>
