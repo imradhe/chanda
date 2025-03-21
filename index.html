@@ -96,9 +96,9 @@
             <th>Sarga</th>
             <th>Sloka</th>
             <th>Chanda</th>
+            <th>Text</th>
             <th>Guru Laghu</th>
             <th>Gana</th>
-            <th>Text</th>
           </tr>
         </thead>
         <tbody id="slokaTableBody"></tbody>
@@ -137,6 +137,13 @@
         chandaSet.add(chandaValue);
         tr.appendChild(tdChanda);
 
+        const tdText = document.createElement("td");
+        const padas = sloka.padas || [];
+        const text = padas.map(pada => pada.map(word => word.word.trim()).join(" ")).join("\n");
+        tdText.innerHTML = `<div class="sloka-text" data-original="${text}">${text}</div>`;
+        tr.appendChild(tdText);
+
+      
         const tdGuruLaghu = document.createElement("td");
         tdGuruLaghu.textContent = sloka.guru_laghu || "";
         tr.appendChild(tdGuruLaghu);
@@ -144,12 +151,6 @@
         const tdGana = document.createElement("td");
         tdGana.textContent = sloka.gana || "";
         tr.appendChild(tdGana);
-
-        const tdText = document.createElement("td");
-        const padas = sloka.padas || [];
-        const text = padas.map(pada => pada.map(word => word.word.trim()).join(" ")).join("\n");
-        tdText.innerHTML = `<div class="sloka-text" data-original="${text}">${text}</div>`;
-        tr.appendChild(tdText);
 
         return tr;
       }
