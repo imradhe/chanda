@@ -72,6 +72,7 @@
         </div>
         <div class="col-md-4">
             <label for="translitDropdown" class="form-label">Transliteration:</label>
+            <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Hover over the text to see transliteration"></i>
           <select id="translitDropdown" class="form-select">
             <option value="devanagari">Devanagari</option>
             <option value="iast">IAST</option>
@@ -131,6 +132,7 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
       let dataTableInstance;
@@ -241,6 +243,12 @@
           if (original) div.text(original);
         });
       }
+      document.addEventListener("DOMContentLoaded", function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+          new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      });
     </script>
   </body>
 </html>
