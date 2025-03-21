@@ -96,6 +96,8 @@
             <th>Sarga</th>
             <th>Sloka</th>
             <th>Chanda</th>
+            <th>Guru Laghu</th>
+            <th>Gana</th>
             <th>Text</th>
           </tr>
         </thead>
@@ -134,6 +136,14 @@
         tdChanda.setAttribute("data-original", chandaValue);
         chandaSet.add(chandaValue);
         tr.appendChild(tdChanda);
+
+        const tdGuruLaghu = document.createElement("td");
+        tdGuruLaghu.textContent = sloka.guru_laghu || "";
+        tr.appendChild(tdGuruLaghu);
+
+        const tdGana = document.createElement("td");
+        tdGana.textContent = sloka.gana || "";
+        tr.appendChild(tdGana);
 
         const tdText = document.createElement("td");
         const padas = sloka.padas || [];
